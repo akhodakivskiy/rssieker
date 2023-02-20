@@ -20,7 +20,7 @@ BtButton button(BUTTON_PIN, BUTTON_PULLUP);
 
 Servo servo;
 BtTracker tracker(RSSI_MAX_SAMPLE_COUNT);
-Sma rssiSma(RSSI_SMA_WINDOW);
+Sma rssiSma(RSSI_TRACKER_STEP_PERIOD_MILLIS / RSSI_SIGNAL_UPDATE_PERIOD_MILLIS);
 
 unsigned long _lastStepTime = 0;
 unsigned long _lastUpdateTime = 0;
@@ -77,14 +77,14 @@ void loop() {
   int pwm = 0;
   int rssi = 0;
 
-  if (_lastUpdateTime + RSSI_UPDATE_PERIOD_MILLIS < millis()) {
+  if (_lastUpdateTime + RSSI_SIGNAL_UPDATE_PERIOD_MILLIS < millis()) {
     rssi = analogRead(RSSI_PIN);
     rssiSma.add(rssi);
 
     _lastUpdateTime = millis();
   }
 
-  if (_lastStepTime + RSSI_STEP_PERIOD_MILLIS < millis()) {
+  if (_lastStepTime + RSSI_TRACKER_STEP_PERIOD_MILLIS < millis()) {
     pwm = servo.readMicroseconds();
     tracker.updateRssi(rssiSma.avg, pwm);
 

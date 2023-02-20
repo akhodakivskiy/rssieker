@@ -8,12 +8,11 @@
 #define RSSI_SIGNAL_MAX 2000
 #define RSSI_SIGNAL_MIN_THRESHOLD 1000
 #define RSSI_SIGNAL_MAX_THRESHOLD 1500
-#define RSSI_UPDATE_PERIOD_MILLIS 5
-#define RSSI_SMA_WINDOW 5
-#define RSSI_STEP_PERIOD_MILLIS 25
+#define RSSI_SIGNAL_UPDATE_PERIOD_MILLIS 5
+#define RSSI_TRACKER_STEP_PERIOD_MILLIS 25
 #define RSSI_MAX_SAMPLE_COUNT 200
-#define RSSI_SIGMA_COUNT 0.5f
-#define RSSI_LOW_SIGNAL_COUNT 1.0f
+#define RSSI_STDEV_SIGMA_FACTOR 0.5f
+#define RSSI_LOW_SIGNAL_FACTOR 1.0f
 
 /* *********** display *********** */
 //#define TFT_ENABLE - in platform.io
@@ -29,11 +28,10 @@
 #define BUTTON_VALUE_DOWN LOW           // `digitalRead(pin)` return value that corresponds to pressed state
 
 /* *********** servo *********** */
-#define SERVO_STEP_PERIOD_MILLIS 20
+#define SERVO_PIN 32
 #define SERVO_PWM_MIN 700
 #define SERVO_PWM_MAX 2300
 #define SERVO_PWM_STEP 30
 #define SERVO_PWM_MIN_STEP 10
-#define SERVO_PIN 32
 
 #endif
