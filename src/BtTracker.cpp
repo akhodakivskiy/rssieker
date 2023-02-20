@@ -73,7 +73,7 @@ void BtTracker::updateRssi(int rssi, int pwm) {
 }
 
 float BtTracker::getLowRssiFactor() const { 
-  return RSSI_LOW_SIGNAL_FACTOR * max(0.0f, (float)RSSI_SIGNAL_MIN_THRESHOLD - getRssiAvg()) / getRssiAvg(); 
+  return RSSI_LOW_SIGNAL_FACTOR * max(0.0f, (float)RSSI_LOW_SIGNAL_THRESHOLD - getRssiAvg()) / getRssiAvg(); 
 }
 
 float BtTracker::getPwmMin() const { 
