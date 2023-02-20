@@ -19,7 +19,7 @@
 BtButton button(BUTTON_PIN, BUTTON_PULLUP);
 
 Servo servo;
-BtTracker tracker(RSSI_DATA_BUFFER_SIZE);
+BtTracker tracker(RSSI_MAX_SAMPLE_COUNT);
 Sma rssiSma(RSSI_SMA_WINDOW);
 
 unsigned long _lastStepTime = 0;
@@ -46,7 +46,7 @@ unsigned long _lastLogRefreshTime = 0;
       display.addPoint(5, "pwm std", tracker.getPwmStdev(), SERVO_PWM_MIN, SERVO_PWM_MAX);
       display.addPoint(6, "pwm min", tracker.getPwmMin(), SERVO_PWM_MIN, SERVO_PWM_MAX);
       display.addPoint(7, "pwm max", tracker.getPwmMax(), SERVO_PWM_MIN, SERVO_PWM_MAX);
-      display.addPoint(8, "step", (float)tracker.getStep(), -SERVO_PWM_STEP, SERVO_PWM_STEP);
+      display.addPoint(8, "rssi max", (float)tracker.getRssiMax(), 0, rssiSma.maxVal);
       display.end();
     }
   }

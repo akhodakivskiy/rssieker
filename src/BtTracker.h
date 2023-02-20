@@ -20,6 +20,7 @@ class BtTracker {
 
     void updateRssi(int rssi, int pwm);
 
+    float getRssiMax() const { return _rssiMax * (float)RSSI_SIGNAL_MAX; }
     float getRssiAvg() const { return _rssiAvg * (float)RSSI_SIGNAL_MAX; }
     float getRssiStdev() const { return _rssiStdev * (float)RSSI_SIGNAL_MAX; }
 
@@ -34,8 +35,8 @@ class BtTracker {
     float _rssiSqAvg;
     float _rssiAvg;
     float _rssiStdev;
+    float _rssiMax;
 
-    float _pwmRssiAvg;
     float _pwmOptimal;
     float _pwmStdev;
 

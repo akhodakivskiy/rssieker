@@ -15,19 +15,22 @@ BtTracker::~BtTracker() {
 void BtTracker::reset() {
   _rssiSqAvg = 0;
   _rssiAvg = 0;
-  _pwmRssiAvg = 0;
+  _rssiMax = 0;
 
   for (int i = 0; i < _dataSize; i++) {
-    _rssiData[i].pwm = SERVO_PWM_MIN + (rand() % (SERVO_PWM_MAX - SERVO_PWM_MIN));
-    _rssiData[i].rssi = ((float)RSSI_SIGNAL_MIN + (float)(rand() % (RSSI_SIGNAL_MAX - RSSI_SIGNAL_MIN))) / (float)RSSI_SIGNAL_MAX;
+    _rssiData[i].pwm = (uint16_t)SERVO_PWM_MIN + (uint16_t)(rand() % (SERVO_PWM_MAX - SERVO_PWM_MIN));
+    _rssiData[i].rssi = (float)(rand() % (RSSI_SIGNAL_MAX - RSSI_SIGNAL_MIN)) / (float)RSSI_SIGNAL_MAX;
 
     _rssiAvg += _rssiData[i].rssi / (float)_dataSize;
     _rssiSqAvg += sq(_rssiData[i].rssi) / (float)_dataSize;
-    _pwmRssiAvg += sq(_rssiData[i].rssi) * (float)_rssiData[i].pwm / (float)_dataSize;
+
+    if (_rssiMax < _rssiData[i].rssi) {
+      _pwmOptimal = _rssiData[i].pwm;
+      _rssiMax = _rssiData[i].rssi;
+    }
   }
 
   _rssiStdev = sqrt(_rssiSqAvg - sq(_rssiAvg));
-  _pwmOptimal = _pwmRssiAvg / _rssiSqAvg;
   _pwmStdev = _rssiStdev * _pwmOptimal / _rssiAvg;
 
   _sampleCount = 0;
@@ -37,22 +40,29 @@ void BtTracker::reset() {
 
 void BtTracker::updateRssi(int rssi, int pwm) {
   float rssiScaled = (float)rssi / (float)RSSI_SIGNAL_MAX;
-  int pos = rand() % _dataSize;
 
-  float prevRssi = _rssiData[pos].rssi;
-  uint16_t prevPwm = _rssiData[pos].pwm;
-
-  _rssiData[pos].pwm = (uint16_t)pwm;
-  _rssiData[pos].rssi = rssiScaled;
-
+  float prevRssi = _rssiData[_samplePos].rssi;
+  _rssiData[_samplePos].pwm = (uint16_t)pwm;
+  _rssiData[_samplePos].rssi = rssiScaled;
+  _samplePos = (_samplePos + 1) % _dataSize;
   _sampleCount += 1;
 
   _rssiAvg += (rssiScaled - prevRssi) / (float)_dataSize;
   _rssiSqAvg += (sq(rssiScaled) - sq(prevRssi)) / (float)_dataSize;
   _rssiStdev = sqrt(_rssiSqAvg - sq(_rssiAvg));
 
-  _pwmRssiAvg += ((sq(rssiScaled) * (float)pwm - sq(prevRssi) * (float)prevPwm)) / (float)_dataSize;
-  _pwmOptimal = _pwmRssiAvg / _rssiSqAvg;
+  if (rssiScaled >= _rssiMax) {
+    _rssiMax = rssiScaled;
+    _pwmOptimal = pwm;
+  } else if (prevRssi >= _rssiMax) {
+    _rssiMax = 0;
+    for (int i = 0; i < _dataSize; i++) {
+      if (_rssiData[i].rssi > _rssiMax) {
+        _rssiMax = _rssiData[i].rssi;
+        _pwmOptimal = _rssiData[i].pwm;
+      }
+    }
+  }
   _pwmStdev = _rssiStdev * _pwmOptimal / _rssiAvg;
 
   if ((float)pwm + SERVO_PWM_STEP >= getPwmMax()) {
@@ -63,7 +73,7 @@ void BtTracker::updateRssi(int rssi, int pwm) {
 }
 
 float BtTracker::getLowRssiFactor() const { 
-  return max(0.0f, (float)RSSI_SIGNAL_MIN_THRESHOLD - getRssiAvg()); 
+  return RSSI_LOW_SIGNAL_COUNT * max(0.0f, (float)RSSI_SIGNAL_MIN_THRESHOLD - getRssiAvg()) / getRssiAvg(); 
 }
 
 float BtTracker::getPwmMin() const { 
